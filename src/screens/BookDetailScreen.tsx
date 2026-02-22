@@ -6,11 +6,15 @@ import {
     ScrollView,
     StyleSheet,
     ActivityIndicator,
+    Linking,
+    TouchableOpacity,
 } from 'react-native'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { RootStackParamList } from '../types/navigation'
 import { BookDetail } from '../types/book'
-import { getBookDetail, getCoverUrl } from '../services/openLibraryService'
+import { NYTArticle } from '../types/nyt'
+import { getBookDetail, getCoverUrl, getBookRatings, BookRating } from '../services/openLibraryService'
+import { getBookReviews } from '../services/nyTimesService'
 import Colors from '../constants/colors'
 import Spacing from '../constants/spacing'
 import { FontSize } from '../constants/typography'
@@ -20,16 +24,24 @@ type DetailRoute = RouteProp<RootStackParamList, 'BookDetail'>
 const BookDetailScreen = () => {
     const { params } = useRoute<DetailRoute>()
     const [book, setBook] = useState<BookDetail | null>(null)
+    const [reviews, setReviews] = useState<NYTArticle[]>([])
+    const [rating, setRating] = useState<BookRating>({ average: 0, count: 0 })
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetchDetail()
+        fetchData()
     }, [])
 
-    const fetchDetail = async () => {
+    const fetchData = async () => {
         try {
-            const data = await getBookDetail(params.bookKey)
-            setBook(data)
+            const [detail, nytReviews, bookRating] = await Promise.all([
+                getBookDetail(params.bookKey),
+                getBookReviews(params.title),
+                getBookRatings(params.bookKey),
+            ])
+            setBook(detail)
+            setReviews(nytReviews)
+            setRating(bookRating)
         } catch (err) {
             console.log('detail fetch failed:', err)
         } finally {
@@ -42,6 +54,21 @@ const BookDetailScreen = () => {
         if (!book?.description) return ''
         if (typeof book.description === 'string') return book.description
         return book.description.value || ''
+    }
+
+    // render star icons based on rating
+    const renderStars = (avg: number) => {
+        const stars = []
+        for (let i = 1; i <= 5; i++) {
+            if (i <= Math.floor(avg)) {
+                stars.push('★')
+            } else if (i - avg < 1 && i - avg > 0) {
+                stars.push('★') // half star shown as full
+            } else {
+                stars.push('☆')
+            }
+        }
+        return stars.join('')
     }
 
     const coverUri = getCoverUrl(params.coverId, 'L')
@@ -75,6 +102,15 @@ const BookDetailScreen = () => {
                     </Text>
                 ) : null}
 
+                {rating.count > 0 ? (
+                    <View style={styles.ratingRow}>
+                        <Text style={styles.stars}>{renderStars(rating.average)}</Text>
+                        <Text style={styles.ratingText}>
+                            {rating.average.toFixed(1)} ({rating.count})
+                        </Text>
+                    </View>
+                ) : null}
+
                 {book?.firstPublishDate ? (
                     <Text style={styles.year}>{book.firstPublishDate}</Text>
                 ) : null}
@@ -91,6 +127,22 @@ const BookDetailScreen = () => {
 
                 {getDescription() ? (
                     <Text style={styles.description}>{getDescription()}</Text>
+                ) : null}
+
+                {reviews.length > 0 ? (
+                    <View style={styles.reviewSection}>
+                        <Text style={styles.reviewHeader}>NYT Reviews</Text>
+                        {reviews.map((r, i) => (
+                            <View key={i} style={styles.reviewCard}>
+                                <Text style={styles.reviewTitle}>{r.headline.main}</Text>
+                                <Text style={styles.reviewSummary}>{r.abstract}</Text>
+                                <Text style={styles.reviewBy}>{r.byline.original}</Text>
+                                <TouchableOpacity onPress={() => Linking.openURL(r.web_url)}>
+                                    <Text style={styles.reviewLink}>Read full review</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </View>
                 ) : null}
             </View>
         </ScrollView>
@@ -142,6 +194,20 @@ const styles = StyleSheet.create({
         color: Colors.primary,
         marginTop: 6,
     },
+    ratingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    stars: {
+        fontSize: FontSize.md,
+        color: '#F5A623',
+    },
+    ratingText: {
+        fontSize: FontSize.sm,
+        color: Colors.textSecondary,
+        marginLeft: 6,
+    },
     year: {
         fontSize: FontSize.sm,
         color: Colors.textSecondary,
@@ -168,6 +234,44 @@ const styles = StyleSheet.create({
         color: Colors.text,
         lineHeight: 24,
         marginTop: Spacing.lg,
+    },
+    reviewSection: {
+        marginTop: Spacing.xl,
+    },
+    reviewHeader: {
+        fontSize: FontSize.lg,
+        fontWeight: '600',
+        color: Colors.text,
+        marginBottom: Spacing.md,
+    },
+    reviewCard: {
+        backgroundColor: Colors.surface,
+        borderRadius: 10,
+        padding: Spacing.md,
+        marginBottom: Spacing.sm,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    reviewTitle: {
+        fontSize: FontSize.sm,
+        fontWeight: '600',
+        color: Colors.text,
+        marginBottom: 4,
+    },
+    reviewSummary: {
+        fontSize: FontSize.sm,
+        color: Colors.text,
+        lineHeight: 20,
+    },
+    reviewBy: {
+        fontSize: FontSize.xs,
+        color: Colors.textSecondary,
+        marginTop: 6,
+    },
+    reviewLink: {
+        fontSize: FontSize.xs,
+        color: Colors.primary,
+        marginTop: 4,
     },
 })
 

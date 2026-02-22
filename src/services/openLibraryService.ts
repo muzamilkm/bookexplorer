@@ -69,3 +69,24 @@ export const getTrendingBooks = async (
         editionCount: work.edition_count,
     }))
 }
+
+export interface BookRating {
+    average: number
+    count: number
+}
+
+// ratings for a work
+export const getBookRatings = async (workKey: string): Promise<BookRating> => {
+    const key = workKey.startsWith('/') ? workKey : `/${workKey}`
+    const url = `${OPEN_LIBRARY_BASE}${key}/ratings.json`
+
+    try {
+        const data = await apiClient<any>(url)
+        return {
+            average: data.summary?.average || 0,
+            count: data.summary?.count || 0,
+        }
+    } catch (err) {
+        return { average: 0, count: 0 }
+    }
+}

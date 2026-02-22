@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import {
     View,
     Text,
-    FlatList,
     StyleSheet,
     ActivityIndicator,
     ScrollView,
@@ -67,31 +66,21 @@ const HomeScreen = () => {
             {/* featured section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Featured Fiction</Text>
-                <FlatList
-                    data={featured}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={(item) => item.key}
-                    contentContainerStyle={styles.horizontalList}
-                    renderItem={({ item }) => (
-                        <BookCard book={item} onPress={() => handleBookPress(item)} />
-                    )}
-                />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+                    {featured.map((item) => (
+                        <BookCard key={item.key} book={item} onPress={() => handleBookPress(item)} />
+                    ))}
+                </ScrollView>
             </View>
 
             {/* popular section */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Popular in Science</Text>
-                <FlatList
-                    data={popular}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={(item) => item.key}
-                    contentContainerStyle={styles.horizontalList}
-                    renderItem={({ item }) => (
-                        <BookCard book={item} onPress={() => handleBookPress(item)} />
-                    )}
-                />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+                    {popular.map((item) => (
+                        <BookCard key={item.key} book={item} onPress={() => handleBookPress(item)} />
+                    ))}
+                </ScrollView>
             </View>
         </ScrollView>
     )
