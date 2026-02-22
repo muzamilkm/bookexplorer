@@ -1,4 +1,4 @@
-// NYTimes Books API response shapes
+// nyt api types
 
 export interface NYTReview {
     url: string

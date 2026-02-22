@@ -1,4 +1,4 @@
-// TypeScript types for book data from Open Library
+// open library types
 
 export interface Book {
     key: string          // work key e.g. /works/OL45804W

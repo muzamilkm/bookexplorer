@@ -1,4 +1,4 @@
-// using system fonts mostly, roboto where needed
+// font config
 export const FontSize = {
     xs: 12,
     sm: 14,
