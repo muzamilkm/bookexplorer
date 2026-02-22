@@ -13,7 +13,6 @@ const BookDetailScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{params.title}</Text>
-            <Text style={styles.sub}>Full details coming soon</Text>
         </View>
     )
 }

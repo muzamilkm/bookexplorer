@@ -7,7 +7,6 @@ const SearchScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.heading}>Search Book</Text>
-            <Text style={styles.sub}>Search for books and authors</Text>
         </View>
     )
 }

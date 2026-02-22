@@ -1,4 +1,4 @@
-// navigator param list — keeps route params type-safe
+// route params
 export type RootStackParamList = {
     MainTabs: undefined
     BookDetail: { bookKey: string; title: string; coverId?: number }
