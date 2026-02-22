@@ -18,6 +18,7 @@ import { getBookReviews } from '../services/nyTimesService'
 import Colors from '../constants/colors'
 import Spacing from '../constants/spacing'
 import { FontSize } from '../constants/typography'
+import ErrorView from '../components/ErrorView'
 
 type DetailRoute = RouteProp<RootStackParamList, 'BookDetail'>
 
@@ -27,12 +28,15 @@ const BookDetailScreen = () => {
     const [reviews, setReviews] = useState<NYTArticle[]>([])
     const [rating, setRating] = useState<BookRating>({ average: 0, count: 0 })
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         fetchData()
     }, [])
 
     const fetchData = async () => {
+        setLoading(true)
+        setError(false)
         try {
             const [detail, nytReviews, bookRating] = await Promise.all([
                 getBookDetail(params.bookKey),
@@ -44,6 +48,7 @@ const BookDetailScreen = () => {
             setRating(bookRating)
         } catch (err) {
             console.log('detail fetch failed:', err)
+            setError(true)
         } finally {
             setLoading(false)
         }
@@ -56,14 +61,13 @@ const BookDetailScreen = () => {
         return book.description.value || ''
     }
 
-    // render star icons based on rating
     const renderStars = (avg: number) => {
         const stars = []
         for (let i = 1; i <= 5; i++) {
             if (i <= Math.floor(avg)) {
                 stars.push('★')
             } else if (i - avg < 1 && i - avg > 0) {
-                stars.push('★') // half star shown as full
+                stars.push('★')
             } else {
                 stars.push('☆')
             }
@@ -79,6 +83,10 @@ const BookDetailScreen = () => {
                 <ActivityIndicator size="large" color={Colors.primary} />
             </View>
         )
+    }
+
+    if (error) {
+        return <ErrorView message="Couldn't load book details" onRetry={fetchData} />
     }
 
     return (

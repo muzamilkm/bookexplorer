@@ -15,6 +15,7 @@ import { RootStackParamList } from '../types/navigation'
 import { Book } from '../types/book'
 import { getTrendingBooks } from '../services/openLibraryService'
 import BookCard from '../components/BookCard'
+import ErrorView from '../components/ErrorView'
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>
 
@@ -23,12 +24,15 @@ const HomeScreen = () => {
     const [featured, setFeatured] = useState<Book[]>([])
     const [popular, setPopular] = useState<Book[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         loadBooks()
     }, [])
 
     const loadBooks = async () => {
+        setLoading(true)
+        setError(false)
         try {
             const [fictionBooks, scienceBooks] = await Promise.all([
                 getTrendingBooks('fiction', 10),
@@ -38,6 +42,7 @@ const HomeScreen = () => {
             setPopular(scienceBooks)
         } catch (err) {
             console.log('failed to load books:', err)
+            setError(true)
         } finally {
             setLoading(false)
         }
@@ -57,6 +62,10 @@ const HomeScreen = () => {
                 <ActivityIndicator size="large" color={Colors.primary} />
             </View>
         )
+    }
+
+    if (error) {
+        return <ErrorView message="Couldn't load books" onRetry={loadBooks} />
     }
 
     return (

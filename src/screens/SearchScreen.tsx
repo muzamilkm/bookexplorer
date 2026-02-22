@@ -26,11 +26,13 @@ const SearchScreen = () => {
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<Book[]>([])
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(false)
     const debouncedQuery = useDebounce(query, 400)
 
     useEffect(() => {
         if (debouncedQuery.trim().length < 2) {
             setResults([])
+            setError(false)
             return
         }
         handleSearch(debouncedQuery)
@@ -38,11 +40,13 @@ const SearchScreen = () => {
 
     const handleSearch = async (q: string) => {
         setLoading(true)
+        setError(false)
         try {
             const data = await searchBooks(q, 1, 20)
             setResults(data.docs)
         } catch (err) {
             console.log('search error:', err)
+            setError(true)
         } finally {
             setLoading(false)
         }
@@ -76,6 +80,14 @@ const SearchScreen = () => {
         )
     }
 
+    const renderEmpty = () => {
+        if (loading || debouncedQuery.trim().length < 2) return null
+        if (error) {
+            return <Text style={styles.emptyText}>Search failed, try again</Text>
+        }
+        return <Text style={styles.emptyText}>No results found</Text>
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Search Book</Text>
@@ -90,15 +102,16 @@ const SearchScreen = () => {
                 />
             </View>
 
-            {loading && (
+            {loading ? (
                 <ActivityIndicator style={styles.loader} color={Colors.primary} />
-            )}
+            ) : null}
 
             <FlatList
                 data={results}
                 keyExtractor={(item) => item.key}
                 renderItem={renderItem}
                 contentContainerStyle={styles.list}
+                ListEmptyComponent={renderEmpty}
             />
         </View>
     )
@@ -168,6 +181,12 @@ const styles = StyleSheet.create({
         fontSize: FontSize.sm,
         color: Colors.textSecondary,
         marginTop: 2,
+    },
+    emptyText: {
+        textAlign: 'center',
+        color: Colors.textMuted,
+        fontSize: FontSize.sm,
+        marginTop: Spacing.xl,
     },
 })
 
