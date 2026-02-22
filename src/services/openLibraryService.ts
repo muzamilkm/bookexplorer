@@ -14,7 +14,6 @@ export const searchBooks = async (
 
     const data = await apiClient<any>(url)
 
-
     const books: Book[] = (data.docs || []).map((doc: any) => ({
         key: doc.key,
         title: doc.title,
@@ -34,7 +33,7 @@ export const searchBooks = async (
 
 // fetch work details by key
 export const getBookDetail = async (workKey: string): Promise<BookDetail> => {
-    // workKey comes as /works/OL123W, strip the leading slash if present
+    // strip leading slash if needed
     const key = workKey.startsWith('/') ? workKey : `/${workKey}`
     const url = `${OPEN_LIBRARY_BASE}${key}.json`
     return apiClient<BookDetail>(url)

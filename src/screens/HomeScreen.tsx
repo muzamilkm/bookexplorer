@@ -8,7 +8,7 @@ import {
     ScrollView,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import Colors from '../constants/colors'
 import Spacing from '../constants/spacing'
 import { FontSize } from '../constants/typography'
@@ -17,7 +17,7 @@ import { Book } from '../types/book'
 import { getTrendingBooks } from '../services/openLibraryService'
 import BookCard from '../components/BookCard'
 
-type NavProp = StackNavigationProp<RootStackParamList, 'MainTabs'>
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>
 
 const HomeScreen = () => {
     const navigation = useNavigation<NavProp>()

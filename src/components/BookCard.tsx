@@ -26,9 +26,9 @@ const BookCard = ({ book, onPress }: BookCardProps) => {
             <Text style={styles.author} numberOfLines={1}>
                 {book.authorName?.[0] || 'Unknown'}
             </Text>
-            {book.firstPublishYear && (
+            {book.firstPublishYear ? (
                 <Text style={styles.year}>{book.firstPublishYear}</Text>
-            )}
+            ) : null}
         </TouchableOpacity>
     )
 }
